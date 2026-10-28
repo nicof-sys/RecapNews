@@ -61,7 +61,7 @@ prompt = (
     "Ne classe pas par pays ni par rubriques fixes : dégage 5 à 9 thèmes propres à l'actualité du jour "
     "(par exemple « Catastrophe ferroviaire en Espagne », « Législatives en Israël », « Prix de l'énergie »), "
     "chacun regroupant des faits liés entre eux, quel que soit le pays concerné. "
-    "Donne à chaque thème un titre court et une phrase de contexte. "
+    "Donne à chaque thème un titre très court (5 mots maximum, sans verbe) et une phrase de contexte. "
     "Classe les thèmes du plus important au moins important (gravité, nombre de sources qui en parlent). "
     "Les faits isolés vont dans un dernier thème intitulé « En bref ». "
     "Une phrase courte par fait, les plus importants d'abord. "
@@ -124,12 +124,15 @@ def traduire_lien(url):
     return url
 
 
-# Barre de navigation (un bouton par thème) puis une section par thème
-nav = ['<button class="actif" data-theme="tous">Tous</button>']
+# Sommaire (une ligne par thème) puis une section par thème
+nav = []
 sections = []
 for i, theme in enumerate(themes, 1):
     titre = escape(theme["titre"])
-    nav.append(f'<button data-theme="t{i}">{titre} <span>{len(theme["faits"])}</span></button>')
+    nav.append(
+        f'<li><button data-theme="t{i}"><span class="num">{i}</span>'
+        f'<span class="titre">{titre}</span><span class="nb">{len(theme["faits"])}</span></button></li>'
+    )
     faits = []
     for fait in theme["faits"]:
         liens = " ".join(
@@ -141,7 +144,12 @@ for i, theme in enumerate(themes, 1):
         f'<section id="t{i}">\n<h2>{titre}</h2>\n<p class="contexte">{escape(theme["contexte"])}</p>\n'
         "<ul>\n" + "\n".join(faits) + "\n</ul>\n</section>"
     )
-corps = "<nav>\n" + "\n".join(nav) + "\n</nav>\n" + "\n".join(sections)
+total = sum(len(t["faits"]) for t in themes)
+corps = (
+    '<nav>\n<div class="entete"><strong>Thèmes du jour</strong>'
+    f'<button class="tous actif" data-theme="tous">Tout afficher ({total})</button></div>\n'
+    "<ol>\n" + "\n".join(nav) + "\n</ol>\n</nav>\n" + "\n".join(sections)
+)
 
 # Filtrage par thème côté lecteur ; le thème choisi est gardé dans l'URL (ex. #t2)
 SCRIPT = """<script>
@@ -170,10 +178,19 @@ page = f"""<!DOCTYPE html>
 body {{ font-family: system-ui, sans-serif; max-width: 760px; margin: 0 auto; padding: 16px; line-height: 1.5; background: #fff; color: #222; }}
 h1 {{ color: #1a56db; font-size: 1.5em; }}
 h2 {{ color: #1a56db; border-bottom: 2px solid #e5e7eb; padding-bottom: 4px; margin-top: 28px; margin-bottom: 4px; }}
-nav {{ position: sticky; top: 0; background: #fff; padding: 8px 0; display: flex; flex-wrap: wrap; gap: 6px; border-bottom: 1px solid #e5e7eb; }}
-nav button {{ font: inherit; font-size: 0.85em; border: 1px solid #c7d2fe; background: #eef2ff; color: #1a56db; border-radius: 999px; padding: 4px 12px; cursor: pointer; }}
-nav button span {{ opacity: 0.6; }}
-nav button.actif {{ background: #1a56db; color: #fff; border-color: #1a56db; }}
+nav {{ border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }}
+nav .entete {{ display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #f9fafb; border-bottom: 1px solid #e5e7eb; }}
+nav .tous {{ font: inherit; font-size: 0.85em; background: none; border: none; color: #1a56db; cursor: pointer; padding: 0; }}
+nav .tous.actif {{ font-weight: 600; }}
+nav ol {{ list-style: none; margin: 0; padding: 0; }}
+nav li {{ margin: 0; border-bottom: 1px solid #f1f1f1; }}
+nav li:last-child {{ border-bottom: none; }}
+nav li button {{ font: inherit; width: 100%; display: flex; align-items: baseline; gap: 10px; padding: 7px 12px; background: none; border: none; border-left: 3px solid transparent; text-align: left; color: #222; cursor: pointer; }}
+nav li button:hover {{ background: #f5f7ff; }}
+nav li button.actif {{ background: #eef2ff; border-left-color: #1a56db; color: #1a56db; font-weight: 600; }}
+nav .num {{ color: #9ca3af; font-size: 0.85em; min-width: 1.2em; }}
+nav .titre {{ flex: 1; }}
+nav .nb {{ color: #6b7280; font-size: 0.8em; background: #f3f4f6; border-radius: 999px; padding: 0 8px; }}
 .contexte {{ color: #555; font-style: italic; margin-top: 0; }}
 li {{ margin-bottom: 8px; }}
 a {{ color: #1a56db; font-size: 0.85em; margin-left: 4px; }}
