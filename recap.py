@@ -2,46 +2,59 @@ import os, time, datetime, re
 import feedparser, requests
 
 FEEDS = {
-    "franceinfo": "https://www.francetvinfo.fr/titres.rss",
-    "France 24": "https://www.france24.com/fr/rss",
-    "Le Monde": "https://www.lemonde.fr/rss/une.xml",
-    "Le Figaro": "https://www.lefigaro.fr/rss/figaro_actualites.xml",
-    "BBC World": "https://feeds.bbci.co.uk/news/world/rss.xml",
+"franceinfo": "https://www.francetvinfo.fr/titres.rss",
+"France 24": "https://www.france24.com/fr/rss",
+"Le Monde": "https://www.lemonde.fr/rss/une.xml",
+"Le Figaro": "https://www.lefigaro.fr/rss/figaro_actualites.xml",
+"BBC World": "https://feeds.bbci.co.uk/news/world/rss.xml",
+"Blast": "https://api.blast-info.fr/rss_articles.xml",
+"Taranis News": "https://taranis.news/feed/",
+"Praxis": "https://praxismedia.fr/feed/",
 }
 
 cutoff = time.time() - 24 * 3600
 items = []
 for source, url in FEEDS.items():
-    for e in feedparser.parse(url).entries:
-        t = e.get("published_parsed") or e.get("updated_parsed")
-        if t and time.mktime(t) >= cutoff:
-            resume = re.sub("<[^>]+>", "", e.get("summary", ""))[:300]
-            items.append(f"[{source}] {e.get('title','')} — {resume}")
+try:
+flux = feedparser.parse(url)
+except Exception:
+print(f"Flux ignoré : {source}")
+continue
+if not flux.entries:
+print(f"Aucun article pour : {source}")
+for e in flux.entries:
+t = e.get("published_parsed") or e.get("updated_parsed")
+if t and time.mktime(t) >= cutoff:
+resume = re.sub("<[^>]+>", "", e.get("summary", ""))[:250]
+items.append(f"[{source}] {e.get('title','')} — {resume} — LIEN: {e.get('link','')}")
 
 prompt = (
-    "Tu es un rédacteur d'agence de presse strictement neutre. "
-    "À partir des dépêches ci-dessous (dernières 24 h), rédige en français un récap factuel : "
-    "uniquement des faits vérifiables, aucune opinion, aucun adjectif orienté, "
-    "ni de droite ni de gauche. Fusionne les doublons entre sources. "
-    "Classe par thèmes : France, International, Économie, Sciences et Tech, Sport, Culture. "
-    "Une phrase courte par fait, les plus importants d'abord. "
-    "Réponds uniquement en HTML simple (balises h2, ul, li), sans balise html ni body.\n\n"
-    + "\n".join(items[:120])
+"Tu es un rédacteur d'agence de presse strictement neutre. "
+"À partir des dépêches ci-dessous (dernières 24 h), rédige en français un récap factuel : "
+"uniquement des faits vérifiables, aucune opinion, aucun adjectif orienté, "
+"ni de droite ni de gauche. Fusionne les doublons entre sources. "
+"Classe par thèmes : France, International, Économie, Sciences et Tech, Sport, Culture. "
+"Une phrase courte par fait, les plus importants d'abord. "
+"Après chaque fait, ajoute le ou les liens des articles utilisés, sous la forme "
+"<a href=\"LIEN\" target=\"_blank\">Nom du média</a>, en reprenant exactement les liens fournis. "
+"Réponds uniquement en HTML simple (balises h2, ul, li, a), sans balise html ni body.\n\n"
++ "\n".join(items[:120])
 )
 
 r = requests.post(
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent",
-    params={"key": os.environ["GEMINI_API_KEY"]},
-    json={"contents": [{"parts": [{"text": prompt}]}]},
-    timeout=600,
+"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent",
+params={"key": os.environ["GEMINI_API_KEY"]},
+json={"contents": [{"parts": [{"text": prompt}]}]},
+timeout=600,
 )
 if r.status_code != 200:
-    print(r.text)
+print(r.text)
 r.raise_for_status()
 corps = r.json()["candidates"][0]["content"]["parts"][0]["text"]
 corps = corps.replace("```html", "").replace("```", "")
 
 date = datetime.datetime.now().strftime("%d/%m/%Y")
+sources = ", ".join(FEEDS)
 page = f"""<!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -53,15 +66,16 @@ body {{ font-family: system-ui, sans-serif; max-width: 760px; margin: 0 auto; pa
 h1 {{ color: #1a56db; font-size: 1.5em; }}
 h2 {{ color: #1a56db; border-bottom: 2px solid #e5e7eb; padding-bottom: 4px; margin-top: 28px; }}
 li {{ margin-bottom: 8px; }}
+a {{ color: #1a56db; font-size: 0.85em; margin-left: 4px; }}
 footer {{ margin-top: 40px; font-size: 0.85em; color: #777; }}
 </style>
 </head>
 <body>
 <h1>Récap des news du {date}</h1>
 {corps}
-<footer>Sources : franceinfo, France 24, Le Monde, Le Figaro, BBC World. Résumé automatique.</footer>
+<footer>Sources : {sources}. Résumé automatique.</footer>
 </body>
 </html>"""
 
 with open("index.html", "w", encoding="utf-8") as f:
-    f.write(page)
+f.write(page)
