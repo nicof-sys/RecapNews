@@ -26,14 +26,14 @@ prompt = (
     "Classe par thèmes : France, International, Économie, Sciences et Tech, Sport, Culture. "
     "Une phrase courte par fait, les plus importants d'abord. "
     "Réponds uniquement en HTML simple (balises h2, ul, li), sans balise html ni body.\n\n"
-    + "\n".join(items[:250])
+    + "\n".join(items[:120])
 )
 
 r = requests.post(
     "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent",
     params={"key": os.environ["GEMINI_API_KEY"]},
     json={"contents": [{"parts": [{"text": prompt}]}]},
-    timeout=180,
+    timeout=600,
 )
 if r.status_code != 200:
     print(r.text)
