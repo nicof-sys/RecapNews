@@ -96,17 +96,24 @@ SCHEMA = {
     "required": ["themes"],
 }
 
-r = requests.post(
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent",
-    params={"key": os.environ["GEMINI_API_KEY"]},
-    json={
-        "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {"responseMimeType": "application/json", "responseSchema": SCHEMA},
-    },
-    timeout=600,
-)
-if r.status_code != 200:
+# Gemini renvoie parfois 503 (surcharge) ou 429 (quota) : on réessaie en espaçant les tentatives
+for attente in (30, 60, 120, 240, None):
+    r = requests.post(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent",
+        params={"key": os.environ["GEMINI_API_KEY"]},
+        json={
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {"responseMimeType": "application/json", "responseSchema": SCHEMA},
+        },
+        timeout=600,
+    )
+    if r.status_code == 200:
+        break
     print(r.text)
+    if r.status_code not in (429, 500, 503) or attente is None:
+        break
+    print(f"Gemini indisponible ({r.status_code}), nouvel essai dans {attente} s")
+    time.sleep(attente)
 r.raise_for_status()
 themes = json.loads(r.json()["candidates"][0]["content"]["parts"][0]["text"])["themes"]
 
