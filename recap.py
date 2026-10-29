@@ -32,9 +32,13 @@ DOMAINES_ETRANGERS = ("theguardian.com", "aljazeera.com", "dw.com", "nytimes.com
 # Plafond par source, pour que les gros flux n'évincent pas les petits
 MAX_PAR_SOURCE = 15
 
-cutoff = time.time() - 24 * 3600
+# Médias qui publient environ une fois par semaine : on remonte sur 7 jours au lieu de 24 h
+HEBDOMADAIRES = ("Taranis News", "Praxis")
+
+maintenant = time.time()
 items = []
 for source, url in FEEDS.items():
+    cutoff = maintenant - (7 if source in HEBDOMADAIRES else 1) * 24 * 3600
     try:
         flux = feedparser.parse(url)
     except Exception:
@@ -49,7 +53,9 @@ for source, url in FEEDS.items():
         t = e.get("published_parsed") or e.get("updated_parsed")
         if t and time.mktime(t) >= cutoff:
             resume = re.sub("<[^>]+>", "", e.get("summary", ""))[:250]
-            items.append(f"[{source}] {e.get('title','')} — {resume} — LIEN: {e.get('link','')}")
+            # Les articles de plus de 24 h portent leur date, pour que Gemini ne les présente pas comme du jour
+            date_article = f" (publié le {time.strftime('%d/%m', t)})" if time.mktime(t) < maintenant - 24 * 3600 else ""
+            items.append(f"[{source}]{date_article} {e.get('title','')} — {resume} — LIEN: {e.get('link','')}")
             n += 1
 
 prompt = (
@@ -61,6 +67,8 @@ prompt = (
     "Fusionne les doublons entre sources, mais cite alors tous les médias qui rapportent le fait. "
     "Chaque média présent dans les dépêches doit être cité au moins une fois : "
     "si aucun de ses articles ne rejoint un thème, places-en un dans « En bref ». "
+    "Quelques dépêches plus anciennes portent leur date de publication : "
+    "mentionne cette date dans le fait au lieu de le présenter comme une nouvelle du jour. "
     "Ne classe pas par pays ni par rubriques fixes : dégage 5 à 9 thèmes propres à l'actualité du jour "
     "(par exemple « Catastrophe ferroviaire en Espagne », « Législatives en Israël », « Prix de l'énergie »), "
     "chacun regroupant des faits liés entre eux, quel que soit le pays concerné. "
