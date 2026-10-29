@@ -10,6 +10,7 @@ FEEDS = {
     "Le Monde": "https://www.lemonde.fr/rss/une.xml",
     "Le Figaro": "https://www.lefigaro.fr/rss/figaro_actualites.xml",
     "Blast": "https://api.blast-info.fr/rss_articles.xml",
+    "Le Média": "https://api.lemediatv.fr/rss.xml",
     "Taranis News": "https://taranis.news/feed/",
     "Praxis": "https://praxismedia.fr/feed/",
     # Anglais
@@ -57,7 +58,9 @@ prompt = (
     "en plusieurs langues (anglais, espagnol, portugais, italien), rédige en français un récap factuel : "
     "uniquement des faits vérifiables, aucune opinion, aucun adjectif orienté, "
     "ni de droite ni de gauche. Traduis fidèlement les dépêches étrangères. "
-    "Fusionne les doublons entre sources. "
+    "Fusionne les doublons entre sources, mais cite alors tous les médias qui rapportent le fait. "
+    "Chaque média présent dans les dépêches doit être cité au moins une fois : "
+    "si aucun de ses articles ne rejoint un thème, places-en un dans « En bref ». "
     "Ne classe pas par pays ni par rubriques fixes : dégage 5 à 9 thèmes propres à l'actualité du jour "
     "(par exemple « Catastrophe ferroviaire en Espagne », « Législatives en Israël », « Prix de l'énergie »), "
     "chacun regroupant des faits liés entre eux, quel que soit le pays concerné. "
