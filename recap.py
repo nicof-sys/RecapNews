@@ -174,27 +174,44 @@ page = f"""<!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Récap news du {date}</title>
+<meta name="color-scheme" content="light dark">
 <style>
-body {{ font-family: system-ui, sans-serif; max-width: 760px; margin: 0 auto; padding: 16px; line-height: 1.5; background: #fff; color: #222; }}
-h1 {{ color: #1a56db; font-size: 1.5em; }}
-h2 {{ color: #1a56db; border-bottom: 2px solid #e5e7eb; padding-bottom: 4px; margin-top: 28px; margin-bottom: 4px; }}
-nav {{ border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }}
-nav .entete {{ display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #f9fafb; border-bottom: 1px solid #e5e7eb; }}
-nav .tous {{ font: inherit; font-size: 0.85em; background: none; border: none; color: #1a56db; cursor: pointer; padding: 0; }}
+:root {{
+  --fond: #fff; --texte: #222; --accent: #1a56db;
+  --bordure: #e5e7eb; --separateur: #f1f1f1;
+  --fond-entete: #f9fafb; --survol: #f5f7ff; --fond-actif: #eef2ff;
+  --discret: #9ca3af; --secondaire: #6b7280; --fond-pastille: #f3f4f6;
+  --contexte: #555; --pied: #777;
+}}
+@media (prefers-color-scheme: dark) {{
+  :root {{
+    --fond: #121417; --texte: #e4e6eb; --accent: #7aa2ff;
+    --bordure: #2e333b; --separateur: #23272e;
+    --fond-entete: #1a1d22; --survol: #1c2333; --fond-actif: #1e2a47;
+    --discret: #6b7280; --secondaire: #9ca3af; --fond-pastille: #262a31;
+    --contexte: #a8adb5; --pied: #8a8f98;
+  }}
+}}
+body {{ font-family: system-ui, sans-serif; max-width: 760px; margin: 0 auto; padding: 16px; line-height: 1.5; background: var(--fond); color: var(--texte); }}
+h1 {{ color: var(--accent); font-size: 1.5em; }}
+h2 {{ color: var(--accent); border-bottom: 2px solid var(--bordure); padding-bottom: 4px; margin-top: 28px; margin-bottom: 4px; }}
+nav {{ border: 1px solid var(--bordure); border-radius: 8px; overflow: hidden; }}
+nav .entete {{ display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--fond-entete); border-bottom: 1px solid var(--bordure); }}
+nav .tous {{ font: inherit; font-size: 0.85em; background: none; border: none; color: var(--accent); cursor: pointer; padding: 0; }}
 nav .tous.actif {{ font-weight: 600; }}
 nav ol {{ list-style: none; margin: 0; padding: 0; }}
-nav li {{ margin: 0; border-bottom: 1px solid #f1f1f1; }}
+nav li {{ margin: 0; border-bottom: 1px solid var(--separateur); }}
 nav li:last-child {{ border-bottom: none; }}
-nav li button {{ font: inherit; width: 100%; display: flex; align-items: baseline; gap: 10px; padding: 7px 12px; background: none; border: none; border-left: 3px solid transparent; text-align: left; color: #222; cursor: pointer; }}
-nav li button:hover {{ background: #f5f7ff; }}
-nav li button.actif {{ background: #eef2ff; border-left-color: #1a56db; color: #1a56db; font-weight: 600; }}
-nav .num {{ color: #9ca3af; font-size: 0.85em; min-width: 1.2em; }}
+nav li button {{ font: inherit; width: 100%; display: flex; align-items: baseline; gap: 10px; padding: 7px 12px; background: none; border: none; border-left: 3px solid transparent; text-align: left; color: var(--texte); cursor: pointer; }}
+nav li button:hover {{ background: var(--survol); }}
+nav li button.actif {{ background: var(--fond-actif); border-left-color: var(--accent); color: var(--accent); font-weight: 600; }}
+nav .num {{ color: var(--discret); font-size: 0.85em; min-width: 1.2em; }}
 nav .titre {{ flex: 1; }}
-nav .nb {{ color: #6b7280; font-size: 0.8em; background: #f3f4f6; border-radius: 999px; padding: 0 8px; }}
-.contexte {{ color: #555; font-style: italic; margin-top: 0; }}
+nav .nb {{ color: var(--secondaire); font-size: 0.8em; background: var(--fond-pastille); border-radius: 999px; padding: 0 8px; }}
+.contexte {{ color: var(--contexte); font-style: italic; margin-top: 0; }}
 li {{ margin-bottom: 8px; }}
-a {{ color: #1a56db; font-size: 0.85em; margin-left: 4px; }}
-footer {{ margin-top: 40px; font-size: 0.85em; color: #777; }}
+a {{ color: var(--accent); font-size: 0.85em; margin-left: 4px; }}
+footer {{ margin-top: 40px; font-size: 0.85em; color: var(--pied); }}
 </style>
 </head>
 <body>
