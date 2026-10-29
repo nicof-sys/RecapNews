@@ -174,23 +174,14 @@ page = f"""<!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Récap news du {date}</title>
-<meta name="color-scheme" content="light dark">
+<meta name="color-scheme" content="dark">
 <style>
 :root {{
-  --fond: #fff; --texte: #222; --accent: #1a56db;
-  --bordure: #e5e7eb; --separateur: #f1f1f1;
-  --fond-entete: #f9fafb; --survol: #f5f7ff; --fond-actif: #eef2ff;
-  --discret: #9ca3af; --secondaire: #6b7280; --fond-pastille: #f3f4f6;
-  --contexte: #555; --pied: #777;
-}}
-@media (prefers-color-scheme: dark) {{
-  :root {{
-    --fond: #121417; --texte: #e4e6eb; --accent: #7aa2ff;
-    --bordure: #2e333b; --separateur: #23272e;
-    --fond-entete: #1a1d22; --survol: #1c2333; --fond-actif: #1e2a47;
-    --discret: #6b7280; --secondaire: #9ca3af; --fond-pastille: #262a31;
-    --contexte: #a8adb5; --pied: #8a8f98;
-  }}
+  --fond: #121417; --texte: #e4e6eb; --accent: #7aa2ff;
+  --bordure: #2e333b; --separateur: #23272e;
+  --fond-entete: #1a1d22; --survol: #1c2333; --fond-actif: #1e2a47;
+  --discret: #6b7280; --secondaire: #9ca3af; --fond-pastille: #262a31;
+  --contexte: #a8adb5; --pied: #8a8f98;
 }}
 body {{ font-family: system-ui, sans-serif; max-width: 760px; margin: 0 auto; padding: 16px; line-height: 1.5; background: var(--fond); color: var(--texte); }}
 h1 {{ color: var(--accent); font-size: 1.5em; }}
